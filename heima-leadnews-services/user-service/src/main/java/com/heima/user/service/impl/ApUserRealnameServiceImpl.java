@@ -22,6 +22,7 @@ import com.heima.model.wemedia.pojos.WmUser;
 import com.heima.user.mapper.ApUserMapper;
 import com.heima.user.mapper.ApUserRealnameMapper;
 import com.heima.user.service.ApUserRealnameService;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -56,7 +57,7 @@ public class ApUserRealnameServiceImpl extends ServiceImpl<ApUserRealnameMapper,
     @Autowired
     private ApUserMapper apUserMapper;
     //用户审核 realname的id
-    @Transactional
+    @GlobalTransactional(rollbackFor = Exception.class,timeoutMills = 300000)
     @Override
     public ResponseResult updateStatusById(AuthDTO dto, Short status) {
         //校验参数
