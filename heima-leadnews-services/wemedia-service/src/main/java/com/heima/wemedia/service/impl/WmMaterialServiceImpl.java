@@ -2,6 +2,7 @@ package com.heima.wemedia.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.common.exception.CustException;
@@ -16,6 +17,7 @@ import com.heima.model.wemedia.pojos.WmNewsMaterial;
 import com.heima.model.wemedia.pojos.WmUser;
 import com.heima.wemedia.mapper.WmMaterialMapper;
 import com.heima.wemedia.mapper.WmNewsMaterialMapper;
+import com.heima.wemedia.mapper.WmUserMapper;
 import com.heima.wemedia.service.WmMaterialService;
 import com.netflix.hystrix.exception.ExceptionNotWrappedByHystrix;
 import com.sun.deploy.panel.ITreeNode;
@@ -50,6 +52,8 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
     @Autowired
     FileStorageService fileStorageService;
 
+    @Autowired
+    private WmUserMapper wmUserMapper;
     @Value("${file.oss.prefix}")
     String prefix;
     @Value("${file.oss.web-site}")
@@ -90,7 +94,9 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
         wmMaterial.setType((short)0);
         wmMaterial.setCreatedTime(new Date());
         wmMaterial.setUrl(filePath);
-        wmMaterial.setUserId(user.getId());
+        //
+        WmUser wmUser = wmUserMapper.selectOne(Wrappers.<WmUser>lambdaQuery().eq(WmUser::getApUserId, user.getId()));
+        wmMaterial.setUserId(wmUser.getId());
         save(wmMaterial);
 
         // 前端显示
@@ -109,7 +115,8 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
         }
         //判断一下当前用户
         WmUser user = WmThreadLocalUtils.getUser();
-        wrapper.eq(WmMaterial::getUserId,user.getId());
+        WmUser wmUser = wmUserMapper.selectOne(Wrappers.<WmUser>lambdaQuery().eq(WmUser::getApUserId, user.getId()));
+        wrapper.eq(WmMaterial::getUserId,wmUser.getId());
         Page<WmMaterial> page = new Page<>(dto.getPage(), dto.getSize());
         IPage<WmMaterial> results = page(page, wrapper);
         List<WmMaterial> records = results.getRecords();
@@ -137,7 +144,7 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
         wrapper.eq(WmNewsMaterial::getMaterialId,id);
         Integer count = wmNewsMaterialMapper.selectCount(wrapper);
         if(count>0) {
-            CustException.cust(AppHttpCodeEnum.DATA_NOT_ALLOW);
+            CustException.cust(AppHttpCodeEnum.DATA_NOT_ALLOW,"与文章关联的图片不能删除");
         }
         //删除素材库
         removeById(id);
