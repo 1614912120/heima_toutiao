@@ -1,0 +1,4 @@
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+aliyun.GreenImageScan,\
+aliyun.GreenTextScan
