@@ -1,4 +1,4 @@
-package com.heima.article.service;
+package com.heima.article.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.article.mapper.AuthorMapper;
+import com.heima.article.service.AuthorService;
 import com.heima.model.article.pojos.ApAuthor;
 import com.heima.model.common.dtos.ResponseResult;
 import io.swagger.annotations.Api;

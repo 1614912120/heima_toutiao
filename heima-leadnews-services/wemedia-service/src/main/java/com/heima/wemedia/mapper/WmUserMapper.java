@@ -3,6 +3,7 @@ package com.heima.wemedia.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.heima.model.wemedia.pojos.WmUser;
 import io.swagger.annotations.Api;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Create 2023/12/29 9:14
  * @Version 1.0
  */
-
+@Mapper
 public interface WmUserMapper extends BaseMapper<WmUser> {
 
 }

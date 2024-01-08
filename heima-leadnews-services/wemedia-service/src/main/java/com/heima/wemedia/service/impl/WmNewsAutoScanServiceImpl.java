@@ -12,7 +12,9 @@ import com.heima.utils.common.SensitiveWordUtil;
 import com.heima.wemedia.mapper.WmNewsMapper;
 import com.heima.wemedia.service.WmNewsAutoScanService;
 import lombok.extern.slf4j.Slf4j;
+import message.PublishArticleConstants;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,8 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
     @Autowired
     private WmNewsMapper wmNewsMapper;
 
+    @Autowired
+    RabbitTemplate rabbitTemplate;
     @Value("${file.oss.web-site}")
     private String webSite;
     @Override
@@ -90,7 +94,19 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
         }
         //todo 将文章状态改为8
         updateNews(WmNews.Status.SUCCESS.getCode(), "审核通过",wmNews);
-
+        //todo 发送延迟消息
+        //获取发布时间
+        long publishTime = wmNews.getPublishTime().getTime();
+        //当前时间
+        long nowTime = new Date().getTime();
+        long remainTime = publishTime - nowTime;
+        rabbitTemplate.convertAndSend(PublishArticleConstants.DELAY_DIRECT_EXCHANGE
+                ,PublishArticleConstants.PUBLISH_ARTICLE_ROUTE_KEY,
+                wmNews.getId(),
+                (message)-> {
+                    message.getMessageProperties().setHeader("x-delay",remainTime<=0?0:remainTime);
+                    return message;
+                });
     }
 
     @Autowired

@@ -3,6 +3,7 @@ package com.heima.wemedia.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.heima.model.wemedia.pojos.WmNewsMaterial;
 import feign.Param;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
  * @Create 2023/12/30 16:04
  * @Version 1.0
  */
+@Mapper
 public interface WmNewsMaterialMapper extends BaseMapper<WmNewsMaterial> {
     /**
      * 保存文章和素材的关联关系

@@ -53,4 +53,11 @@ public interface WmNewsService extends IService<WmNews> {
      * @return
      */
     public ResponseResult updateStatus(Short status, NewsAuthDTO dto);
+
+    /**
+     * 上下架
+     * @param dto
+     * @return
+     */
+    ResponseResult downOrUp(WmNewsDTO dto);
 }

@@ -19,6 +19,7 @@
         <module>heima-leadnews-test</module>
         <module>heima-leadnews-test/aliyun-oss-demo</module>
         <module>heima-leadnews-test/aliyun-save-demo</module>
+        <module>heima-leadnews-test/freemarker-demo</module>
     </modules>
     <!-- 继承Spring boot工程 -->
     <parent>

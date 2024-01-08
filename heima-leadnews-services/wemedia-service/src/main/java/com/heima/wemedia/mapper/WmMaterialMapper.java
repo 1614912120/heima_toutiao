@@ -3,6 +3,7 @@ package com.heima.wemedia.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.heima.model.wemedia.pojos.WmMaterial;
 import io.swagger.models.auth.In;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
  * @Create 2023/12/30 13:48
  * @Version 1.0
  */
+@Mapper
 public interface WmMaterialMapper extends BaseMapper<WmMaterial> {
     /**
      * 根据素材资源路径，查询相关素材id

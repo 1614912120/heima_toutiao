@@ -29,6 +29,8 @@ import com.heima.wemedia.service.WmNewsService;
 import com.heima.wemedia.service.WmUserService;
 import lombok.extern.slf4j.Slf4j;
 import message.NewsAutoScanConstants;
+import message.NewsUpOrDownConstants;
+import message.PublishArticleConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.weaver.ast.Var;
 import org.checkerframework.checker.units.qual.A;
@@ -155,6 +157,45 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
         //发送待审核的消息MQ
         rabbitTemplate.convertAndSend(NewsAutoScanConstants.WM_NEWS_AUTO_SCAN_QUEUE,wmNews.getId());
         log.info("mq  成功发送待审核的消息，文章id==",wmNews.getId());
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+    @Override
+    public ResponseResult downOrUp(WmNewsDTO dto) {
+        //1.检查参数
+        if(dto == null || dto.getId() == null){
+            CustException.cust(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        Short enable = dto.getEnable();
+        if(enable == null ||
+                (!WemediaConstants.WM_NEWS_UP.equals(enable)&&!WemediaConstants.WM_NEWS_DOWN.equals(enable))){
+            CustException.cust(AppHttpCodeEnum.PARAM_INVALID,"上下架状态错误");
+        }
+        //2.查询文章
+        WmNews wmNews = getById(dto.getId());
+        if(wmNews == null){
+            CustException.cust(AppHttpCodeEnum.DATA_NOT_EXIST,"文章不存在");
+        }
+        //3.判断文章是否发布
+        if(!wmNews.getStatus().equals(WmNews.Status.PUBLISHED.getCode())){
+            CustException.cust(AppHttpCodeEnum.DATA_NOT_EXIST,"当前文章不是发布状态，不能上下架");
+        }
+        //4.修改文章状态，同步到app端（后期做）TODO
+        update(Wrappers.<WmNews>lambdaUpdate().eq(WmNews::getId,dto.getId())
+                .set(WmNews::getEnable,dto.getEnable()));
+
+        if (wmNews.getArticleId()!=null) {
+            if(dto.getEnable().equals(WemediaConstants.WM_NEWS_UP)){
+                // 上架消息
+                rabbitTemplate.convertAndSend(NewsUpOrDownConstants.NEWS_UP_OR_DOWN_EXCHANGE,
+                        NewsUpOrDownConstants.NEWS_UP_ROUTE_KEY,wmNews.getArticleId());
+                log.info("发送了上架消息",wmNews.getArticleId());
+            }else {
+                // 下架消息
+                rabbitTemplate.convertAndSend(NewsUpOrDownConstants.NEWS_UP_OR_DOWN_EXCHANGE,
+                        NewsUpOrDownConstants.NEWS_DOWN_ROUTE_KEY,wmNews.getArticleId());
+                log.info("发送了下架消息");
+            }
+        }
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
@@ -352,7 +393,25 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
             wmNews.setReason(dto.getMsg());
         }
         updateById(wmNews);
+        //todo 发布延迟队列
+        //5. 通知定时发布文章
+        // 发布时间
+        long publishTime = wmNews.getPublishTime().getTime();
+        // 当前时间
+        long nowTime = new Date().getTime();
+        long remainTime = publishTime - nowTime;
+        // 发布文章
+        rabbitTemplate.convertAndSend(PublishArticleConstants.DELAY_DIRECT_EXCHANGE
+                , PublishArticleConstants.PUBLISH_ARTICLE_ROUTE_KEY
+                , wmNews.getId()
+                , (message)->{                              // 延时消息 必设置
+                    message.getMessageProperties().setHeader("x-delay",remainTime<=0?0:remainTime);
+                    return message;
+                }
+        );
+        log.info("立即发布文章通知成功发送，文章id : {}", wmNews.getId());
         //
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+
     }
 }
