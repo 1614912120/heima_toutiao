@@ -283,7 +283,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
         wmNews.setCreatedTime(new Date());
         WmUser user = WmThreadLocalUtils.getUser();
         WmUser wmUser = wmUserMapper.selectOne(Wrappers.<WmUser>lambdaQuery().eq(WmUser::getApUserId, user.getId()));
-        wmNews.setUserId(wmUser.getId());
+        wmNews.setUserId(user.getId());
         wmNews.setSubmitedTime(new Date());
         wmNews.setEnable(WemediaConstants.WM_NEWS_UP); // 上架
         if(wmNews.getId() == null) {
