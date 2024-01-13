@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.print.attribute.standard.PagesPerMinute;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.concurrent.Executors;
 
@@ -57,14 +58,14 @@ public class AdChannelServiceImpl extends ServiceImpl<ChannelMapper, AdChannel> 
     @Override
     public ResponseResult insert(AdChannel channel) {
         //参数校验
-        String name= channel.getName();
-        if(StringUtils.isBlank(name)) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
-        }
-        if(name.length()>10) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID,"频道名称长度不能大于10");
-
-        }
+//        String name= channel.getName();
+//        if(StringUtils.isBlank(name)) {
+//            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+//        }
+//        if(name.length()>10) {
+//            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID,"频道名称长度不能大于10");
+//
+//        }
         //查询名字是否重复
         int count = count(Wrappers.<AdChannel>lambdaQuery().eq(AdChannel::getName, channel.getName()));
         if(count>0){
@@ -78,10 +79,11 @@ public class AdChannelServiceImpl extends ServiceImpl<ChannelMapper, AdChannel> 
     }
 
     @Override
+    @NotNull(message = "id字段不能为null")
     public ResponseResult update(AdChannel channel) {
-        if(channel.getId() == null) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
-        }
+//        if(channel.getId() == null) {
+//            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+//        }
         //获取id判断是不是存在
         AdChannel channelOld = getById(channel.getId());
         if(channelOld == null) {

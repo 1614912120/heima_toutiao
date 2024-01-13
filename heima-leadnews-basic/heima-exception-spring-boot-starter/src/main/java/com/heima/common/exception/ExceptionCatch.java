@@ -14,6 +14,7 @@ import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -43,5 +44,16 @@ public class ExceptionCatch {
         log.error("CustomException ex:{}", ex);
         AppHttpCodeEnum codeEnum = ex.getAppHttpCodeEnum();
         return ResponseResult.errorResult(codeEnum);
+    }
+
+    /**
+     * 参数校验
+     * @return
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseResult handleValidationException(MethodArgumentNotValidException ex) {
+        log.error("MethodArgumentNotValidException ex:{}", ex);
+        ex.printStackTrace();
+        return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, ex.getBindingResult().getFieldError().getDefaultMessage());
     }
 }

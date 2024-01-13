@@ -4,8 +4,11 @@ import com.heima.admin.service.AdChannelService;
 import com.heima.model.admin.dtos.ChannelDTO;
 import com.heima.model.admin.pojos.AdChannel;
 import com.heima.model.common.dtos.ResponseResult;
+import com.heima.model.common.validator.ValidatorAdd;
+import com.heima.model.common.validator.ValidatorUpdate;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,14 +35,14 @@ public class AdChannelController {
 
     @ApiOperation("频道新增")
     @PostMapping("/save")
-    public ResponseResult insert(@RequestBody AdChannel channel){
+    public ResponseResult insert(@RequestBody @Validated(ValidatorAdd.class) AdChannel channel){
         return adChannelService.insert(channel);
     }
 
 
     @ApiOperation("频道修改")
     @PostMapping("/update")
-    public ResponseResult update(@RequestBody AdChannel adChannel) {
+    public ResponseResult update(@RequestBody @Validated(ValidatorUpdate.class) AdChannel adChannel) {
         return adChannelService.update(adChannel);
     }
 
